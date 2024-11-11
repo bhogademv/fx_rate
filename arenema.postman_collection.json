@@ -1,0 +1,55 @@
+{
+	"info": {
+		"_postman_id": "c9a0f437-e2c0-4a78-8835-2637ab09d4e3",
+		"name": "arenema",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9541187"
+	},
+	"item": [
+		{
+			"name": "get rate",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/fx?targetCurrency=EUR",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"fx"
+					],
+					"query": [
+						{
+							"key": "targetCurrency",
+							"value": "EUR"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get 3 fx",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/fx/EUR",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"fx",
+						"EUR"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
