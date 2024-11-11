@@ -1,13 +1,12 @@
 package com.arenema.fx_rate.controller;
 
-
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.arenema.fx_rate.entity.ExchangeRate;
 import com.arenema.fx_rate.service.ExchangeRateService;
 
 @WebMvcTest(ExchangeRateController.class)
@@ -30,47 +28,66 @@ public class ExchangeRateControllerTests {
 
     @Test
     public void testGetExchangeRate() throws Exception {
-        ExchangeRate rate = new ExchangeRate();
-        rate.setDate(LocalDate.now());
-        rate.setSourceCurrency("USD");
-        rate.setTargetCurrency("EUR");
-        rate.setRate(BigDecimal.valueOf(0.85));
+        Map<String, Object> mockResponse = new HashMap<>();
+        mockResponse.put("date", "2024-08-26");
+        mockResponse.put("source", "USD");
 
-        when(exchangeRateService.getExchangeRate("EUR")).thenReturn(rate);
+        Map<String, String> rate1 = new HashMap<>();
+        rate1.put("target", "GBP");
+        rate1.put("value", "0.76192");
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/fx?targetCurrency=EUR"))
+        Map<String, String> rate2 = new HashMap<>();
+        rate2.put("target", "CZK");
+        rate2.put("value", "22.55");
+
+        mockResponse.put("rates", Arrays.asList(rate1, rate2));
+
+        when(exchangeRateService.getExchangeRate("USD")).thenReturn(mockResponse);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/fx?targetCurrency=USD"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.sourceCurrency").value("USD"))
-                .andExpect(jsonPath("$.targetCurrency").value("EUR"))
-                .andExpect(jsonPath("$.rate").value(0.85));
+                .andExpect(jsonPath("$.date").value("2024-08-26"))
+                .andExpect(jsonPath("$.source").value("USD"))
+                .andExpect(jsonPath("$.rates[0].target").value("GBP"))
+                .andExpect(jsonPath("$.rates[0].value").value("0.76192"))
+                .andExpect(jsonPath("$.rates[1].target").value("CZK"))
+                .andExpect(jsonPath("$.rates[1].value").value("22.55"));
     }
 
     @Test
     public void testGetLatestRates() throws Exception {
-        ExchangeRate rate1 = new ExchangeRate();
-        rate1.setDate(LocalDate.now().minusDays(2));
-        rate1.setSourceCurrency("USD");
-        rate1.setTargetCurrency("EUR");
-        rate1.setRate(BigDecimal.valueOf(0.84));
+        Map<String, Object> mockResponse = new HashMap<>();
+        mockResponse.put("source", "USD");
 
-        ExchangeRate rate2 = new ExchangeRate();
-        rate2.setDate(LocalDate.now().minusDays(1));
-        rate2.setSourceCurrency("USD");
-        rate2.setTargetCurrency("EUR");
-        rate2.setRate(BigDecimal.valueOf(0.85));
+        Map<String, String> rate1 = new HashMap<>();
+        rate1.put("target", "GBP");
+        rate1.put("value", "0.77206");
 
-        ExchangeRate rate3 = new ExchangeRate();
-        rate3.setDate(LocalDate.now());
-        rate3.setSourceCurrency("USD");
-        rate3.setTargetCurrency("EUR");
-        rate3.setRate(BigDecimal.valueOf(0.86));
+        Map<String, String> rate2 = new HashMap<>();
+        rate2.put("target", "GBP");
+        rate2.put("value", "0.77206");
 
-        when(exchangeRateService.getLatestRates("EUR")).thenReturn(Arrays.asList(rate1, rate2, rate3));
+        Map<String, String> rate3 = new HashMap<>();
+        rate3.put("target", "GBP");
+        rate3.put("value", "0.77431");
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/fx/EUR"))
+        Map<String, Map<String, String>> ratesMap = new HashMap<>();
+        ratesMap.put("2024-08-20", rate1);
+        ratesMap.put("2024-08-19", rate2);
+        ratesMap.put("2024-08-18", rate3);
+
+        mockResponse.put("rates", ratesMap);
+
+        when(exchangeRateService.getLatestRates("GBP")).thenReturn(mockResponse);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/fx/GBP"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].rate").value(0.84))
-                .andExpect(jsonPath("$[1].rate").value(0.85))
-                .andExpect(jsonPath("$[2].rate").value(0.86));
+                .andExpect(jsonPath("$.source").value("USD"))
+                .andExpect(jsonPath("$.rates['2024-08-20'].target").value("GBP"))
+                .andExpect(jsonPath("$.rates['2024-08-20'].value").value("0.77206"))
+                .andExpect(jsonPath("$.rates['2024-08-19'].target").value("GBP"))
+                .andExpect(jsonPath("$.rates['2024-08-19'].value").value("0.77206"))
+                .andExpect(jsonPath("$.rates['2024-08-18'].target").value("GBP"))
+                .andExpect(jsonPath("$.rates['2024-08-18'].value").value("0.77431"));
     }
 }

@@ -1,4 +1,4 @@
-package com.arenema.fx_rate.entity;
+package com.arenema.fx_rate.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
